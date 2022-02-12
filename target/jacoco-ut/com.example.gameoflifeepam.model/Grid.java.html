@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Grid.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GameOfLifeEPAM</a> &gt; <a href="index.source.html" class="el_package">com.example.gameoflifeepam.model</a> &gt; <span class="el_source">Grid.java</span></div><h1>Grid.java</h1><pre class="source lang-java linenums">package com.example.gameoflifeepam.model;
+
+
+public class Grid {
+
+    private final int sizeY;
+    private final int sizeX;
+    private final Cell[][] cells;
+
+<span class="fc" id="L10">    public Grid(int sizeX, int sizeY) {</span>
+<span class="fc" id="L11">        cells = new Cell[sizeY][sizeX];</span>
+<span class="fc" id="L12">        this.sizeY = sizeY;</span>
+<span class="fc" id="L13">        this.sizeX = sizeX;</span>
+<span class="fc" id="L14">    }</span>
+
+<span class="fc" id="L16">    public Grid(Grid otherGrid) {</span>
+
+<span class="fc" id="L18">        this.sizeY = otherGrid.getSizeY();</span>
+<span class="fc" id="L19">        this.sizeX = otherGrid.getSizeX();</span>
+<span class="fc" id="L20">        cells = new Cell[sizeY][sizeX];</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        for (int i = 0; i &lt; this.getCells().length; i++)</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">            for (int j = 0; j &lt; this.getCells()[i].length; j++)</span>
+<span class="fc" id="L23">                this.getCells()[i][j] = otherGrid.getCells()[i][j].clone();</span>
+<span class="fc" id="L24">    }</span>
+
+    public int getSizeY() {
+<span class="fc" id="L27">        return sizeY;</span>
+    }
+
+    public int getSizeX() {
+<span class="fc" id="L31">        return sizeX;</span>
+    }
+
+    public Cell[][] getCells() {
+<span class="fc" id="L35">        return cells;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -5,14 +5,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CellTest {
+public class CellTest {
 
     @Test
-    void testIsAlive() {
+    public void testIsAlive() {
         Cell cell = new Cell(true);
         assertTrue(cell.isAlive());
         cell.setAlive(false);
         assertFalse(cell.isAlive());
     }
-
 }

@@ -1,8 +1,8 @@
 package com.example.gameoflifeepam.controller;
 
 import com.example.gameoflifeepam.model.Grid;
-import com.example.gameoflifeepam.model.GridServiceImpl;
 import com.example.gameoflifeepam.model.GridService;
+import com.example.gameoflifeepam.model.GridServiceImpl;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -27,7 +27,7 @@ public class Creator implements Runnable {
             for (int y = 0; y < grid.getSizeY(); y++) {
                 for (int x = 0; x < grid.getSizeX(); x++) {
                     int neighbors = gridService.checkNeighbors(prevGrid, x, y);
-                    if (neighbors == 3) {
+                    if (neighbors == 2) {
                         grid.getCells()[y][x].setAlive(true);
                     }
                 }
@@ -35,6 +35,7 @@ public class Creator implements Runnable {
             try {
                 barrier.await();
             } catch (InterruptedException | BrokenBarrierException e) {
+                System.out.println("Break creator cycle");
                 break;
             }
         }

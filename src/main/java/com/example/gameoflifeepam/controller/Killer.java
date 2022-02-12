@@ -1,8 +1,8 @@
 package com.example.gameoflifeepam.controller;
 
 import com.example.gameoflifeepam.model.Grid;
-import com.example.gameoflifeepam.model.GridServiceImpl;
 import com.example.gameoflifeepam.model.GridService;
+import com.example.gameoflifeepam.model.GridServiceImpl;
 import com.example.gameoflifeepam.view.MainView;
 
 import java.util.concurrent.BrokenBarrierException;
@@ -32,7 +32,7 @@ public class Killer implements Runnable {
                     int neighbors = gridService.checkNeighbors(prevGrid, x, y);
                     if (neighbors < 2) {
                         grid.getCells()[y][x].setAlive(false);
-                    } else if (neighbors > 3) {
+                    } else if (neighbors > 5) {
                         grid.getCells()[y][x].setAlive(false);
                     }
                 }
@@ -40,6 +40,7 @@ public class Killer implements Runnable {
             try {
                 barrier.await();
             } catch (InterruptedException | BrokenBarrierException e) {
+                System.out.println("Break killer cycle");
                 break;
             }
 

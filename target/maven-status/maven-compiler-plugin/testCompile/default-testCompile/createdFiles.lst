@@ -1,1 +1,4 @@
 com\example\gameoflifeepam\model\GridServiceImplTest.class
+com\example\gameoflifeepam\model\HistoryImplTest.class
+com\example\gameoflifeepam\model\CellTest.class
+com\example\gameoflifeepam\model\GridTest.class

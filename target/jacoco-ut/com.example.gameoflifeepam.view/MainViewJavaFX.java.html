@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MainViewJavaFX.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GameOfLifeEPAM</a> &gt; <a href="index.source.html" class="el_package">com.example.gameoflifeepam.view</a> &gt; <span class="el_source">MainViewJavaFX.java</span></div><h1>MainViewJavaFX.java</h1><pre class="source lang-java linenums">package com.example.gameoflifeepam.view;
+
+import com.example.gameoflifeepam.controller.SimulationController;
+import com.example.gameoflifeepam.controller.Simulator;
+import com.example.gameoflifeepam.model.*;
+import javafx.geometry.Point2D;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.NonInvertibleTransformException;
+
+public class MainViewJavaFX extends VBox implements MainView {
+
+    public static final int WINDOW_SIZE_X = 700, WINDOW_SIZE_Y = 730;
+<span class="nc" id="L19">    static final Color BACKGROUND_COLOR = Color.LIGHTGRAY;</span>
+<span class="nc" id="L20">    static final Color CELL_COLOR = Color.LIGHTSALMON;</span>
+<span class="nc" id="L21">    static final Color LINE_COLOR = Color.BLACK;</span>
+    static final float LINE_WIDTH = 0.01f;
+    static final String START_BUTTON_TEXT = &quot;Start&quot;;
+    static final String START_BUTTON_TEXT_RUNNING = &quot;Running&quot;;
+
+    private final Canvas canvas;
+    private final MainViewToolbar mainViewToolbar;
+    private final Affine affine;
+<span class="nc" id="L29">    private final GridService gridService = new GridServiceImpl();</span>
+    private final int timeOfFrame;
+    private final int gridSizeX;
+    private final int gridSizeY;
+    private final int epochs;
+    private final History history;
+
+    private Grid grid;
+    private Simulator simulator;
+<span class="nc" id="L38">    private int currentStepInHistory = 0;</span>
+<span class="nc" id="L39">    private int maxCurrentStepInHistory = 0;</span>
+
+<span class="nc" id="L41">    public MainViewJavaFX(int epochs, int timeOfFrame, int sizeX, int sizeY) {</span>
+<span class="nc" id="L42">        this.history = new HistoryImpl();</span>
+<span class="nc" id="L43">        this.epochs = epochs;</span>
+<span class="nc" id="L44">        this.timeOfFrame = timeOfFrame;</span>
+<span class="nc" id="L45">        this.gridSizeX = sizeX;</span>
+<span class="nc" id="L46">        this.gridSizeY = sizeY;</span>
+<span class="nc" id="L47">        this.canvas = new Canvas(WINDOW_SIZE_X, WINDOW_SIZE_Y);</span>
+<span class="nc" id="L48">        this.grid = new Grid(gridSizeX, gridSizeY);</span>
+<span class="nc" id="L49">        this.mainViewToolbar = new MainViewToolbar();</span>
+
+<span class="nc" id="L51">        this.affine = new Affine();</span>
+<span class="nc" id="L52">        this.affine.appendScale(WINDOW_SIZE_X / (float) gridSizeX, WINDOW_SIZE_Y / (float) gridSizeY);</span>
+
+<span class="nc" id="L54">        this.mainViewToolbar.getClear().setOnAction(actionEvent -&gt; clearButtonAction());</span>
+<span class="nc" id="L55">        this.mainViewToolbar.getStart().setOnAction(actionEvent -&gt; startButtonAction());</span>
+<span class="nc" id="L56">        this.mainViewToolbar.getStepForward().setOnAction(actionEvent -&gt; forwardAction());</span>
+<span class="nc" id="L57">        this.mainViewToolbar.getStepBack().setOnAction(actionEvent -&gt; backAction());</span>
+<span class="nc" id="L58">        this.canvas.setOnMouseClicked(this::handleDraw);</span>
+
+<span class="nc" id="L60">        this.getChildren().addAll(this.canvas, mainViewToolbar);</span>
+
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (gridService.isEmpty(this.grid)) {</span>
+<span class="nc" id="L63">            gridService.fillByRandom(this.grid);</span>
+        }
+<span class="nc" id="L65">        drawGrid(this.grid);</span>
+<span class="nc" id="L66">    }</span>
+
+    private void backAction() {
+<span class="nc" id="L69">        decrementStep();</span>
+<span class="nc" id="L70">        grid = history.getHistory().get(currentStepInHistory);</span>
+<span class="nc" id="L71">        drawGrid(grid);</span>
+<span class="nc" id="L72">        System.out.println(currentStepInHistory + &quot; &quot; + maxCurrentStepInHistory);</span>
+<span class="nc" id="L73">    }</span>
+
+    private void forwardAction() {
+<span class="nc" id="L76">        incrementStep();</span>
+<span class="nc" id="L77">        grid = history.getHistory().get(currentStepInHistory);</span>
+<span class="nc" id="L78">        drawGrid(grid);</span>
+<span class="nc" id="L79">        System.out.println(currentStepInHistory + &quot; &quot; + maxCurrentStepInHistory);</span>
+<span class="nc" id="L80">    }</span>
+
+    private void makeButtonsDisableState(boolean state, Button... buttons) {
+        for (Button button :
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                buttons) {</span>
+<span class="nc" id="L85">            button.setDisable(state);</span>
+        }
+<span class="nc" id="L87">    }</span>
+
+    private void handleDraw(MouseEvent mouseEvent) {
+<span class="nc" id="L90">        double mouseX = mouseEvent.getX();</span>
+<span class="nc" id="L91">        double mouseY = mouseEvent.getY();</span>
+
+        try {
+<span class="nc" id="L94">            Point2D cellCoordinate = affine.inverseTransform(mouseX, mouseY);</span>
+<span class="nc" id="L95">            int simX = (int) cellCoordinate.getX();</span>
+<span class="nc" id="L96">            int simY = (int) cellCoordinate.getY();</span>
+
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            grid.getCells()[simY][simX].setAlive(!grid.getCells()[simY][simX].isAlive());</span>
+<span class="nc" id="L99">            drawCell(grid, simX, simY);</span>
+
+<span class="nc" id="L101">        } catch (NonInvertibleTransformException e) {</span>
+<span class="nc" id="L102">            e.printStackTrace();</span>
+<span class="nc" id="L103">        }</span>
+<span class="nc" id="L104">    }</span>
+
+    private void clearButtonAction() {
+<span class="nc" id="L107">        gridService.killAllInGrid(grid);</span>
+<span class="nc" id="L108">        drawGrid(grid);</span>
+<span class="nc" id="L109">    }</span>
+
+    private void startButtonAction() {
+<span class="nc" id="L112">        startSimulation(epochs);</span>
+<span class="nc" id="L113">        mainViewToolbar.getStart().setText(START_BUTTON_TEXT_RUNNING);</span>
+<span class="nc" id="L114">        makeButtonsDisableState(true, mainViewToolbar.getStart(), mainViewToolbar.getClear());</span>
+<span class="nc" id="L115">        mainViewToolbar.getStop().setOnAction(actionEvent1 -&gt; stopButtonAction());</span>
+<span class="nc" id="L116">    }</span>
+
+    private void startSimulation(int epochs) {
+<span class="nc" id="L119">        simulator = new SimulationController(grid, epochs, timeOfFrame, this);</span>
+<span class="nc" id="L120">        simulator.run();</span>
+<span class="nc" id="L121">    }</span>
+
+    private void stopButtonAction() {
+<span class="nc" id="L124">        simulator.stop();</span>
+<span class="nc" id="L125">        makeButtonsDisableState(false, mainViewToolbar.getStart(), mainViewToolbar.getClear());</span>
+<span class="nc" id="L126">        mainViewToolbar.getStart().setText(START_BUTTON_TEXT);</span>
+<span class="nc" id="L127">    }</span>
+
+    private void addStep() {
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (maxCurrentStepInHistory &lt; HistoryImpl.CAPACITY - 1) {</span>
+<span class="nc" id="L131">            maxCurrentStepInHistory++;</span>
+<span class="nc" id="L132">            currentStepInHistory++;</span>
+        } else {
+<span class="nc" id="L134">            maxCurrentStepInHistory = HistoryImpl.CAPACITY - 1;</span>
+<span class="nc" id="L135">            currentStepInHistory = HistoryImpl.CAPACITY - 1;</span>
+        }
+<span class="nc" id="L137">    }</span>
+
+    private void incrementStep() {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (currentStepInHistory &lt; maxCurrentStepInHistory) {</span>
+<span class="nc" id="L141">            currentStepInHistory++;</span>
+        } else {
+<span class="nc" id="L143">            currentStepInHistory = maxCurrentStepInHistory;</span>
+        }
+<span class="nc" id="L145">    }</span>
+
+    private void decrementStep() {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (currentStepInHistory &gt; 0) {</span>
+<span class="nc" id="L149">            currentStepInHistory--;</span>
+        } else {
+<span class="nc" id="L151">            currentStepInHistory = 0;</span>
+        }
+<span class="nc" id="L153">    }</span>
+
+    @Override
+    public void drawGrid(Grid grid) {
+<span class="nc" id="L157">        this.grid = grid;</span>
+<span class="nc" id="L158">        GraphicsContext g = canvas.getGraphicsContext2D();</span>
+<span class="nc" id="L159">        g.setTransform(affine);</span>
+<span class="nc" id="L160">        g.setFill(BACKGROUND_COLOR);</span>
+<span class="nc" id="L161">        g.fillRect(0, 0, WINDOW_SIZE_X, WINDOW_SIZE_Y);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        for (int y = 0; y &lt; this.grid.getSizeY(); y++) {</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">            for (int x = 0; x &lt; this.grid.getSizeX(); x++) {</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">                if (this.grid.getCells()[y][x].isAlive()) {</span>
+<span class="nc" id="L165">                    g.setFill(CELL_COLOR);</span>
+<span class="nc" id="L166">                    g.fillRect(x, y, 1, 1);</span>
+                }
+            }
+        }
+
+<span class="nc" id="L171">        g.setStroke(LINE_COLOR);</span>
+<span class="nc" id="L172">        g.setLineWidth(LINE_WIDTH);</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        for (int y = 0; y &lt; this.grid.getSizeY(); y++) {</span>
+<span class="nc" id="L174">            g.strokeLine(0, y, gridSizeY, y);</span>
+        }
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        for (int x = 0; x &lt; this.grid.getSizeX(); x++) {</span>
+<span class="nc" id="L177">            g.strokeLine(x, 0, x, gridSizeX);</span>
+        }
+<span class="nc" id="L179">    }</span>
+
+    @Override
+    public void updateGridFromSim(Grid grid) {
+<span class="nc" id="L183">        addStep();</span>
+<span class="nc" id="L184">        history.add(this.grid, this.currentStepInHistory);</span>
+<span class="nc" id="L185">        drawGrid(grid);</span>
+<span class="nc" id="L186">    }</span>
+
+    @Override
+    public void endingOfSimulation() {
+<span class="nc" id="L190">        stopButtonAction();</span>
+<span class="nc" id="L191">    }</span>
+
+    @Override
+    public void drawCell(Grid grid, int x, int y) {
+<span class="nc" id="L195">        this.grid = grid;</span>
+<span class="nc" id="L196">        GraphicsContext g = canvas.getGraphicsContext2D();</span>
+<span class="nc" id="L197">        g.setTransform(affine);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        g.setFill(grid.getCells()[y][x].isAlive() ? CELL_COLOR : BACKGROUND_COLOR);</span>
+<span class="nc" id="L199">        g.fillRect(x, y, 1, 1);</span>
+<span class="nc" id="L200">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

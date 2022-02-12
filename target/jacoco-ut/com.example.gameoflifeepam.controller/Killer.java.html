@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Killer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GameOfLifeEPAM</a> &gt; <a href="index.source.html" class="el_package">com.example.gameoflifeepam.controller</a> &gt; <span class="el_source">Killer.java</span></div><h1>Killer.java</h1><pre class="source lang-java linenums">package com.example.gameoflifeepam.controller;
+
+import com.example.gameoflifeepam.model.Grid;
+import com.example.gameoflifeepam.model.GridService;
+import com.example.gameoflifeepam.model.GridServiceImpl;
+import com.example.gameoflifeepam.view.MainView;
+
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
+public class Killer implements Runnable {
+    private final Grid grid;
+<span class="nc" id="L13">    private final GridService gridService = new GridServiceImpl();</span>
+    private final int epochs;
+    private final CyclicBarrier barrier;
+    private final MainView mainView;
+
+
+<span class="nc" id="L19">    public Killer(Grid grid, int epochs, CyclicBarrier barrier, MainView mainView) {</span>
+<span class="nc" id="L20">        this.grid = grid;</span>
+<span class="nc" id="L21">        this.epochs = epochs;</span>
+<span class="nc" id="L22">        this.barrier = barrier;</span>
+<span class="nc" id="L23">        this.mainView = mainView;</span>
+<span class="nc" id="L24">    }</span>
+
+    @Override
+    public void run() {
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        for (int i = 0; i &lt; epochs; i++) {</span>
+<span class="nc" id="L29">            Grid prevGrid = new Grid(grid);</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">            for (int y = 0; y &lt; grid.getSizeY(); y++) {</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">                for (int x = 0; x &lt; grid.getSizeX(); x++) {</span>
+<span class="nc" id="L32">                    int neighbors = gridService.checkNeighbors(prevGrid, x, y);</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">                    if (neighbors &lt; 3) {</span>
+<span class="nc" id="L34">                        grid.getCells()[y][x].setAlive(false);</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">                    } else if (neighbors &gt; 5) {</span>
+<span class="nc" id="L36">                        grid.getCells()[y][x].setAlive(false);</span>
+                    }
+                }
+            }
+            try {
+<span class="nc" id="L41">                barrier.await();</span>
+<span class="nc" id="L42">            } catch (InterruptedException | BrokenBarrierException e) {</span>
+<span class="nc" id="L43">                System.out.println(&quot;Break killer cycle&quot;);</span>
+<span class="nc" id="L44">                break;</span>
+<span class="nc" id="L45">            }</span>
+
+        }
+<span class="nc" id="L48">        mainView.endingOfSimulation();</span>
+<span class="nc" id="L49">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
